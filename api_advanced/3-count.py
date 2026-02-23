@@ -1,43 +1,51 @@
 #!/usr/bin/python3
-"""Module to recursively count keyword occurrences in hot post titles."""
+"""
+Recursive function that queries the Reddit API, parses the title of all hot
+articles, and prints a sorted count of given keywords
+"""
 import requests
 
 
-def count_words(subreddit, word_list, counts=None, after=None):
-    """Recursively count and print sorted keyword occurrences in titles."""
+def count_words(subreddit, word_list, after=None, counts=None):
+    """
+    Prints a sorted count of given keywords in the titles of all hot posts
+    """
     if counts is None:
         counts = {}
-        for word in word_list:
-            w = word.lower()
-            counts[w] = counts.get(w, 0)
-
+        word_list = [word.lower() for word in word_list]
+    
     url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-    headers = {"User-Agent": "MyRedditBot/1.0"}
-    params = {"limit": 100}
-    if after:
-        params["after"] = after
-
-    response = requests.get(
-        url, headers=headers, params=params, allow_redirects=False
-    )
-    if response.status_code != 200:
-        return
-
-    data = response.json().get("data", {})
-    posts = data.get("children", [])
-
-    for post in posts:
-        title = post.get("data", {}).get("title", "").lower().split()
-        for word in title:
-            if word in counts:
-                counts[word] += 1
-
-    next_after = data.get("after")
-    if next_after is None:
-        results = sorted(counts.items(), key=lambda x: (-x[1], x[0]))
-        for word, count in results:
-            if count > 0:
-                print("{}: {}".format(word, count))
-        return
-
-    return count_words(subreddit, word_list, counts, next_after)
+    headers = {
+        "User-Agent": "linux:3-count.py:v1.0.0 (by /u/yourusername)"
+    }
+    params = {
+        "limit": 100,
+        "after": after
+    }
+    
+    response = requests.get(url, headers=headers, params=params, allow_redirects=False)
+    
+    if response.status_code == 200:
+        data = response.json()
+        posts = data.get("data", {}).get("children", [])
+        after = data.get("data", {}).get("after")
+        
+        for post in posts:
+            title = post.get("data", {}).get("title", "").lower().split()
+            
+            for word in word_list:
+                word_lower = word.lower()
+                # Count exact word matches only (no partial matches)
+                count = title.count(word_lower)
+                if count > 0:
+                    counts[word_lower] = counts.get(word_lower, 0) + count
+        
+        if after is not None:
+            return count_words(subreddit, word_list, after, counts)
+        else:
+            if counts:
+                # Sort by count (descending) and then alphabetically (ascending)
+                sorted_counts = sorted(counts.items(), key=lambda x: (-x[1], x[0]))
+                for word, count in sorted_counts:
+                    print(f"{word}: {count}")
+    return None
