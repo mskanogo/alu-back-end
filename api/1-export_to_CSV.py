@@ -1,34 +1,28 @@
 #!/usr/bin/python3
-
+"""Gather data from an API and export employee tasks to CSV format."""
 import csv
 import requests
 import sys
 
 
 if __name__ == "__main__":
-    user_id = sys.argv[1]
+    employee_id = int(sys.argv[1])
+    base_url = "https://jsonplaceholder.typicode.com"
 
-    # Get user info
-    user_response = requests.get(
-        "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
-    )
-    user = user_response.json()
+    user = requests.get("{}/users/{}".format(base_url, employee_id)).json()
+    todos = requests.get(
+        "{}/todos".format(base_url), params={"userId": employee_id}
+    ).json()
 
-    # Get todos
-    todos_response = requests.get(
-        "https://jsonplaceholder.typicode.com/todos?userId={}".format(user_id)
-    )
-    todos = todos_response.json()
+    username = user.get("username")
+    filename = "{}.csv".format(employee_id)
 
-    filename = "{}.csv".format(user_id)
-
-    with open(filename, mode="w", newline="") as file:
-        writer = csv.writer(file, quoting=csv.QUOTE_ALL)
-
+    with open(filename, mode="w", newline="") as csvfile:
+        writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
         for task in todos:
             writer.writerow([
-                user_id,
-                user.get("username"),
+                employee_id,
+                username,
                 task.get("completed"),
                 task.get("title")
             ])
