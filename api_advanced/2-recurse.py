@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-"""Recursively retrieves all hot post titles for a given subreddit."""
+"""Module to recursively retrieve all hot post titles for a subreddit."""
 import requests
 
 
 def recurse(subreddit, hot_list=[], after=None):
-    """Recursively query Reddit API and return list of all hot post titles."""
+    """Recursively return a list of all hot post titles for a subreddit."""
     url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
     headers = {"User-Agent": "MyRedditBot/1.0"}
     params = {"limit": 100}

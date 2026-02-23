@@ -1,11 +1,12 @@
 #!/usr/bin/python3
-"""Recursively counts keyword occurrences in hot post titles."""
+"""Module to recursively count keyword occurrences in hot post titles."""
 import requests
 
 
-def count_words(subreddit, word_list, counts={}, after=None):
-    """Recursively query Reddit API and count keyword occurrences in titles."""
-    if not counts:
+def count_words(subreddit, word_list, counts=None, after=None):
+    """Recursively count and print sorted keyword occurrences in titles."""
+    if counts is None:
+        counts = {}
         for word in word_list:
             w = word.lower()
             counts[w] = counts.get(w, 0)
