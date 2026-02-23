@@ -1,24 +1,39 @@
 #!/usr/bin/python3
+"""
+Module that recursively queries the Reddit API
+and returns all hot post titles for a subreddit.
+"""
 import requests
 
-def add_subscriber(subreddit, amount):
+
+def recurse(subreddit, hot_list=[], after=None):
     """
-    Adds 'amount' of subscribers to the subreddit.
-    Returns the new number of subscribers, or None if invalid subreddit.
+    Recursively collects all hot post titles.
+    Returns list of titles or None if invalid subreddit.
     """
-    url = f"https://www.reddit.com/r/{subreddit}/about.json"
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    response = requests.get(url, headers=headers, allow_redirects=False)
-    
+    headers = {"User-Agent": "alu-api-advanced"}
+    url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
+    params = {"after": after}
+
+    response = requests.get(
+        url,
+        headers=headers,
+        params=params,
+        allow_redirects=False
+    )
+
     if response.status_code != 200:
         return None
-    
-    data = response.json()
-    current_subs = data['data'].get('subscribers', 0)
-    
-    new_total = current_subs + amount
-    # Ensure the total is not negative
-    if new_total < 0:
-        new_total = 0
-    
-    return new_total
+
+    data = response.json().get("data", {})
+    posts = data.get("children", [])
+
+    for post in posts:
+        hot_list.append(post.get("data", {}).get("title"))
+
+    after = data.get("after")
+
+    if after:
+        return recurse(subreddit, hot_list, after)
+
+    return hot_list
