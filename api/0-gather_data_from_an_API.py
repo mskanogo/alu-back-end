@@ -1,18 +1,23 @@
 #!/usr/bin/python3
+
 import requests
 import sys
+
 
 if __name__ == "__main__":
     user_id = sys.argv[1]
 
-    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
-    user_response = requests.get(user_url)
-    user_data = user_response.json()
-    employee_name = user_data.get("name")
+    # Get user information
+    user_response = requests.get(
+        "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
+    )
+    user = user_response.json()
 
-    todo_url = "https://jsonplaceholder.typicode.com/todos?userId={}".format(user_id)
-    todo_response = requests.get(todo_url)
-    todos = todo_response.json()
+    # Get user's todos
+    todos_response = requests.get(
+        "https://jsonplaceholder.typicode.com/todos?userId={}".format(user_id)
+    )
+    todos = todos_response.json()
 
     total_tasks = len(todos)
     done_tasks = 0
@@ -21,8 +26,8 @@ if __name__ == "__main__":
         if task.get("completed") is True:
             done_tasks += 1
 
-    print("Employee {} is done with tasks({}/{}):"
-          .format(employee_name, done_tasks, total_tasks))
+    print("Employee {} is done with tasks({}/{}):".format(
+        user.get("name"), done_tasks, total_tasks))
 
     for task in todos:
         if task.get("completed") is True:

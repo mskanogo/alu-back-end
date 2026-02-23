@@ -1,18 +1,24 @@
 #!/usr/bin/python3
+
 import csv
 import requests
 import sys
 
+
 if __name__ == "__main__":
     user_id = sys.argv[1]
 
-    user = requests.get(
+    # Get user info
+    user_response = requests.get(
         "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
-    ).json()
+    )
+    user = user_response.json()
 
-    todos = requests.get(
+    # Get todos
+    todos_response = requests.get(
         "https://jsonplaceholder.typicode.com/todos?userId={}".format(user_id)
-    ).json()
+    )
+    todos = todos_response.json()
 
     filename = "{}.csv".format(user_id)
 
